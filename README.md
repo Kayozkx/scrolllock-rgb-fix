@@ -6,7 +6,7 @@ Fixes the RGB lighting behavior of generic gaming keyboards that use the **Scrol
 
 ## Documentation and Learning Resources
 
-In addition to the required files, this repository includes **RGB_ScrollLock_Ubuntu.pdf**, a complete technical guide and development journal containing:
+In addition to the required files, this repository includes **RGB_ScrollLock_Ubuntu_EN.pdf**, a complete technical guide and development journal containing:
 
 - A detailed, line-by-line explanation of how the Python script interacts with the hardware.
 - A complete breakdown of how the `systemd` service works.
