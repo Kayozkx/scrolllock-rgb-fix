@@ -1,121 +1,131 @@
-# Scrolllock-rgb-fix
+# Scrolllock RGB Fix
 
-Corrige o efeito RGB de teclados gamer genéricos (que utilizam o LED de Scroll Lock como gatilho de firmware) em sistemas operacionais que rodam GNOME/Wayland. É uma solução definitiva mesmo para versões recentes do Ubuntu (26.04+), onde o suporte a sessões Xorg foi completamente removido pelo GNOME.
-
----
-
-## Guia
-
-Além de disponibilizar os arquivos prontos para uso, este repositório acompanha o arquivo `RGB_ScrollLock_Ubuntu.pdf` contendo:
-
-* Explicação detalhada e linha por linha de como o script Python interage com o hardware.
-* Destrinchamento completo do funcionamento do serviço `systemd`.
-* Um histórico passo a passo com os 22 comandos de terminal utilizados para diagnosticar o problema e validar a solução.
-
-Se você deseja aprender como a solução foi construída por baixo dos panos ou precisa dar manutenção caso mude de sistema, o PDF é o seu ponto de partida.
+Fixes the RGB lighting behavior of generic gaming keyboards that use the **Scroll Lock LED** as a firmware trigger on systems running **GNOME/Wayland**. It provides a permanent solution for recent Ubuntu releases (26.04+) where GNOME has completely removed support for Xorg sessions.
 
 ---
 
-## Sobre o Desenvolvimento
+## Documentation and Learning Resources
 
-A ideia de criar um script em Python para contornar esse problema do RGB partiu de mim. Porém, como não tenho conhecimento suficiente na linguagem Python para escrevê-lo do zero, o código foi desenvolvido através de *vibe coding* com a ajuda da inteligência artificial Claude. Essa parceria serviu para tirar a ideia da minha mente e transformá-la neste script que funciona perfeitamente.
+In addition to the required files, this repository includes **RGB_ScrollLock_Ubuntu.pdf**, a complete technical guide and development journal containing:
 
----
+- A detailed, line-by-line explanation of how the Python script interacts with the hardware.
+- A complete breakdown of how the `systemd` service works.
+- A step-by-step history of the 22 terminal commands used to diagnose the issue and validate the solution.
 
-## O Problema
-
-Muitos kits de teclado gamer de baixo custo não possuem software de controle próprio para Linux. O efeito RGB é ativado pelo próprio firmware do hardware sempre que o LED padrão de Scroll Lock é aceso pelo sistema operacional. Isso funciona perfeitamente no Windows ou no console de texto puro (TTY) do Linux.
-
-No entanto, o GNOME rodando sob o protocolo Wayland não sincroniza as mudanças de estado do LED de Scroll Lock com o dispositivo físico. Como o GNOME 49+ removeu de vez o suporte ao Xorg, não é mais possível contornar o problema apenas alterando a sessão gráfica.
+If you want to understand how the solution was built or adapt it to another Linux distribution, the PDF is the best place to start.
 
 ---
 
-## A Solução
+## About the Project
 
-Este projeto implementa um serviço leve em Python que roda em segundo plano e resolve o problema falando diretamente com o kernel do Linux:
+The idea for creating a Python script to solve this RGB issue came from me. However, since I didn't yet have enough Python knowledge to implement it from scratch, the code was developed through **vibe coding** with the assistance of Anthropic's Claude AI.
 
-* **Busca Dinâmica:** Encontra de forma automática o teclado correto e o LED de Scroll Lock em `/sys/class/leds/` e `/dev/input/`, garantindo o funcionamento mesmo que os índices mudem após reiniciar o PC.
-* **Intercepção via evdev:** Monitora os eventos de pressionamento de tecla em tempo real.
-* **Escrita Direta:** Ao detectar o acionamento do Scroll Lock, altera manualmente o arquivo `/brightness` do LED, ativando o firmware do RGB.
-* **Contenção de Conflitos:** Monitora se o GNOME resetou o LED devido ao uso do Caps Lock ou Num Lock e força o estado correto de volta.
-* **Automação:** Roda silenciosamente gerenciado pelo `systemd`, iniciando sozinho junto com o boot do sistema.
+The AI served as a development tool to transform the concept into a working implementation, while the overall idea, testing, debugging, and validation of the solution were carried out by me.
 
 ---
 
-## Requisitos
+## The Problem
 
-* Ubuntu / GNOME em Wayland (Testado e validado no Ubuntu 26.04 LTS)
-* Biblioteca do sistema `python3-evdev`
-* Teclado cujo circuito RGB dependa fisicamente do estado do LED de Scroll Lock
+Many low-cost gaming keyboards do not provide official software support for Linux. On these keyboards, the RGB lighting is controlled internally by the firmware, which uses the **Scroll Lock LED** state as its trigger.
+
+This works perfectly on Windows and also in Linux virtual consoles (TTY).
+
+However, when running **GNOME on Wayland**, changes to the Scroll Lock LED state are no longer synchronized with the physical keyboard. Since GNOME 49+ removed support for Xorg sessions, simply switching display servers is no longer a viable workaround.
 
 ---
 
-## Instalação e Configuração
+## The Solution
 
-Siga os passos abaixo no seu terminal para clonar o repositório e instalar o serviço no seu sistema.
+This project implements a lightweight Python service that runs in the background and communicates directly with the Linux kernel.
 
-### 1. Clonar o repositório e instalar dependências
+Features include:
+
+- **Dynamic Device Detection:** Automatically locates the correct keyboard and Scroll Lock LED under `/sys/class/leds/` and `/dev/input/`, even if device indexes change after reboot.
+- **Real-Time Event Monitoring:** Uses the `evdev` library to monitor keyboard events.
+- **Direct Kernel Control:** Writes directly to the LED's `brightness` file whenever Scroll Lock is pressed, triggering the keyboard's RGB firmware.
+- **Conflict Recovery:** Detects when GNOME changes the LED state (for example after pressing Caps Lock or Num Lock) and immediately restores the correct value.
+- **Automatic Startup:** Runs silently as a `systemd` service and starts automatically during system boot.
+
+---
+
+## Requirements
+
+- Ubuntu with GNOME running on Wayland (tested on Ubuntu 26.04 LTS)
+- `python3-evdev`
+- A keyboard whose RGB controller depends on the physical Scroll Lock LED state
+
+---
+
+## Installation
+
+Follow the steps below to install the service.
+
+### 1. Clone the repository and install dependencies
 
 ```bash
-# Clone o projeto para a sua máquina
+# Clone the repository
 git clone https://github.com/Kayozkx/scrolllock-rgb-fix.git
 
-# Acesse a pasta do projeto
+# Enter the project directory
 cd scrolllock-rgb-fix
 
-# Instale a biblioteca evdev necessária para o Python
+# Install the required Python library
 sudo apt install python3-evdev
 ```
 
-### 2. Copiar os arquivos para os diretórios do sistema
+### 2. Copy the files
 
 ```bash
-# Mova o script Python para o diretório de binários locais e dê permissão de execução
+# Copy the Python script
 sudo cp scrolllock-rgb.py /usr/local/bin/scrolllock-rgb.py
 sudo chmod +x /usr/local/bin/scrolllock-rgb.py
 
-# Mova o arquivo de configuração do serviço para o systemd
+# Copy the systemd service
 sudo cp scrolllock-rgb.service /etc/systemd/system/scrolllock-rgb.service
 ```
 
-### 3. Ativar e iniciar o serviço automático
+### 3. Enable and start the service
 
 ```bash
-# Recarregue as configurações do systemd para reconhecer o novo serviço
+# Reload systemd configuration
 sudo systemctl daemon-reload
 
-# Ative para iniciar no boot e inicialize o serviço agora mesmo
+# Enable the service at boot and start it immediately
 sudo systemctl enable --now scrolllock-rgb.service
 ```
 
 ---
 
-## Verificando o Funcionamento
+## Verifying the Installation
 
-Após a instalação, você pode testar pressionando a tecla Scroll Lock para ver o RGB ligar e desligar.
+After installation, press the **Scroll Lock** key to verify that the RGB lighting turns on and off correctly.
 
-Se quiser confirmar se o serviço está operando corretamente em segundo plano, utilize os comandos abaixo:
+To confirm that the service is running:
 
 ```bash
-# Verificar se o status atual do serviço é "active (running)"
 systemctl status scrolllock-rgb.service --no-pager
+```
 
-# Monitorar os logs gerados pelo script em tempo real
+To monitor the service logs:
+
+```bash
 journalctl -u scrolllock-rgb.service --no-pager
 ```
 
-Experimente apertar as teclas Caps Lock ou Num Lock repetidamente para garantir que o GNOME não vai quebrar ou derrubar o estado atual do seu RGB.
+You can also repeatedly press **Caps Lock** and **Num Lock** to verify that GNOME no longer interferes with the RGB state.
 
 ---
 
-## Como funciona por baixo dos panos
+## How It Works
 
-O kernel do Linux expõe o controle do LED de Scroll Lock através de um arquivo localizado em:
+The Linux kernel exposes the Scroll Lock LED through the following file:
 
 ```text
-/sys/class/leds/<dispositivo>::scrolllock/brightness
+/sys/class/leds/<device>::scrolllock/brightness
 ```
 
-Escrever o valor `1` ou `0` neste arquivo acende ou apaga o LED (e o circuito do RGB acoplado a ele) instantaneamente, sem precisar de permissões da interface gráfica.
+Writing the value `1` turns the LED on, while writing `0` turns it off. Since many keyboards internally use this LED as the trigger for their RGB controller, changing this file also controls the keyboard lighting.
 
-O script automatiza essa tarefa interceptando os sinais enviados ao arquivo `/dev/input/eventX` do teclado e realizando a escrita direta no sistema de arquivos do kernel (sysfs), contornando de forma limpa qualquer limitação imposta pelo Wayland.
+The script continuously listens for keyboard events using the **evdev** library and writes directly to this file whenever necessary. By interacting directly with the kernel through **sysfs**, it bypasses the limitations imposed by Wayland without requiring Xorg or any graphical workarounds.
+
+---
