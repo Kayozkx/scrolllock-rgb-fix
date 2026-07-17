@@ -1,4 +1,10 @@
-# Scrolllock-rgb-fix
+# Scrolllock rgb fix
+![Linux](https://img.shields.io/badge/Linux-Suportado-green)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-26.04%20LTS-E95420)
+![Python](https://img.shields.io/badge/Python-3-blue)
+![Teclado](https://img.shields.io/badge/Teclado-Gamer%20Gen%C3%A9rico-orange)
+![Licença](https://img.shields.io/github/license/Kayozkx/scrolllock-rgb-fix)
+
 
 Corrige o efeito RGB de teclados gamer genéricos (que utilizam o LED de Scroll Lock como gatilho de firmware) em sistemas operacionais que rodam GNOME/Wayland. É uma solução definitiva mesmo para versões recentes do Ubuntu (26.04+), onde o suporte a sessões Xorg foi completamente removido pelo GNOME.
 
