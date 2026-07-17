@@ -1,5 +1,5 @@
 [Unit]
-Description=Sincroniza LED do Scroll Lock com RGB do teclado
+Description=Synchronizes the Scroll Lock LED with the keyboard RGB
 After=multi-user.target
 
 [Service]
