@@ -8,7 +8,7 @@ Ubuntu (26.04+), onde o GNOME removeu completamente o suporte a Xorg.
 ## Sobre o Desenvolvimento
 
 A ideia de criar um script em Python para contornar esse problema do RGB partiu de mim. 
-Porém, como não tenho conhecimento suficiente na linguagem Python para escrevê-lo do zero,o código foi desenvolvido através de *vibe coding* com a ajuda da inteligência artificial **Claude**. 
+Porém, como não tenho conhecimento suficiente na linguagem Python para escrevê-lo do zero, o código foi desenvolvido através de *vibe coding* com a ajuda da inteligência artificial **Claude**. 
 Essa parceria serviu para tirar a ideia da minha mente e transformá-la neste script que funciona perfeitamente.
 
 ## O problema
