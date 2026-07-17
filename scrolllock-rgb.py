@@ -2,14 +2,15 @@
 """
 scrolllock-rgb.py
 
-Sincroniza o LED de Scroll Lock com o RGB de teclados gamer genéricos
-que usam esse LED como gatilho de firmware, em sistemas GNOME/Wayland
-onde o compositor não repassa o estado do LED para o hardware.
+Synchronizes the Scroll Lock LED with the RGB lighting of generic gaming
+keyboards that use this LED as a firmware trigger on GNOME/Wayland
+systems, where the compositor does not propagate the LED state to the
+physical hardware.
 
-Descobre automaticamente o teclado e o caminho do LED em tempo de
-execução, então continua funcionando mesmo que os índices de
-/dev/input/eventX ou /sys/class/leds/inputX::scrolllock mudem entre
-reinicializações.
+The script automatically discovers both the keyboard device and the LED
+path at runtime, allowing it to continue working even if the
+/dev/input/eventX or /sys/class/leds/inputX::scrolllock indexes change
+between reboots.
 """
 
 import evdev
@@ -19,7 +20,7 @@ import time
 
 
 def find_led_path():
-    """Procura o arquivo de brilho do LED de Scroll Lock em /sys/class/leds/."""
+    """Locate the Scroll Lock LED brightness file under /sys/class/leds/."""
     matches = glob.glob("/sys/class/leds/*scrolllock*")
     if matches:
         return matches[0] + "/brightness"
@@ -27,9 +28,12 @@ def find_led_path():
 
 
 def find_keyboard():
-    """Procura, entre os dispositivos de entrada, o que é realmente o teclado
-    (precisa suportar tanto Scroll Lock quanto a tecla A, para descartar
-    dispositivos auxiliares como 'Consumer Control' ou 'System Control')."""
+    """Find the actual keyboard among all input devices.
+
+    The device must support both the Scroll Lock key and the A key in
+    order to filter out auxiliary devices such as "Consumer Control"
+    or "System Control".
+    """
     for path in evdev.list_devices():
         dev = evdev.InputDevice(path)
         caps = dev.capabilities().get(ecodes.EV_KEY, [])
@@ -43,9 +47,10 @@ def main():
     device = find_keyboard()
 
     if led_path is None or device is None:
-        # O systemd está configurado com Restart=always, então o serviço
-        # tenta de novo automaticamente até o teclado estar disponível.
-        raise SystemExit("Teclado ou LED de Scroll Lock não encontrado ainda")
+        # The systemd service is configured with Restart=always,
+        # so it will automatically retry until the keyboard becomes
+        # available during boot.
+        raise SystemExit("Keyboard or Scroll Lock LED not found yet")
 
     state = 0
 
@@ -54,14 +59,20 @@ def main():
             f.write(str(value))
 
     for event in device.read_loop():
-        if event.type == ecodes.EV_KEY and event.code == ecodes.KEY_SCROLLLOCK and event.value == 1:
-            # Tecla Scroll Lock pressionada: inverte o estado do RGB.
+        if (
+            event.type == ecodes.EV_KEY
+            and event.code == ecodes.KEY_SCROLLLOCK
+            and event.value == 1
+        ):
+            # Scroll Lock key pressed: toggle the RGB state.
             state = 1 - state
             set_led(state)
+
         elif event.type == ecodes.EV_LED:
-            # O GNOME alterou algum LED (Caps/Num Lock) e pode ter
-            # resetado o nosso Scroll Lock sem querer. Espera o GNOME
-            # terminar de escrever e força o estado correto de volta.
+            # GNOME changed one of the keyboard LEDs (Caps Lock or
+            # Num Lock), which may unintentionally reset Scroll Lock.
+            # Wait for GNOME to finish updating the LEDs, then restore
+            # the desired Scroll Lock state.
             time.sleep(0.05)
             set_led(state)
 
