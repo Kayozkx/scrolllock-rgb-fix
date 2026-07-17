@@ -1,4 +1,4 @@
-# Scrolllock RGB Fix
+# Scroll Lock Keyboard RGB Fix
 
 Fixes the RGB lighting behavior of generic gaming keyboards that use the **Scroll Lock LED** as a firmware trigger on systems running **GNOME/Wayland**. It provides a permanent solution for recent Ubuntu releases (26.04+) where GNOME has completely removed support for Xorg sessions.
 
