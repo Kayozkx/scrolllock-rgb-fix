@@ -80,7 +80,3 @@ junto), independente de qualquer coisa que o ambiente gráfico faça. Este
 projeto simplesmente automatiza essa escrita, reagindo ao evento de tecla
 capturado diretamente do dispositivo `/dev/input/eventX`, sem depender do
 GNOME/Wayland sincronizar nada sozinho.
-
-## Licença
-
-MIT — use, modifique e distribua à vontade.
